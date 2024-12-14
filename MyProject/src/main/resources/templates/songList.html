@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song List</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #1e1e1e;
+            color: #ff5252;
+        }
+
+        .search-box {
+            text-align: center;
+            margin: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-top: 10px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        input[type="text"] {
+            background-color: #333;
+            color: #fff;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #ff5252;
+            color: #fff;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .song-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .song-list li {
+            background-color: #1e1e1e;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .song-list li h3 {
+            color: #ff5252;
+        }
+
+        .song-list li p {
+            color: #ccc;
+        }
+        /* 비디오 iframe을 숨기기 위한 스타일 */
+        #player {
+            display: none;
+        }
+        ul {
+		    color: #000; /* 텍스트 색상 변경 */
+		}
+		
+		li {
+		    color: #fff; /* 리스트 아이템 텍스트 색상을 밝게 설정 */
+		    font-size: 16px; /* 글자 크기 조정 */
+		}
+		.back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #ff5252;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #ff6f61;
+        }
+        
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Song List</h1>
+    </header>
+    <a href="/index" class="back-link">홈으로 돌아가기</a>
+
+    <main>
+        <!-- 검색창 -->
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="검색어를 입력하세요" onkeypress="handleKeyPress(event)">
+            <button onclick="searchSongs()">검색</button>
+        </div>
+
+        <!-- 노래 목록 -->
+        <ul class="song-list" id="songList">
+            <!-- YouTube 플레이리스트 항목이 동적으로 추가될 곳 -->
+        </ul>
+    </main>
+
+    <script>
+    // YouTube API를 통해 데이터를 가져오는 함수
+    async function fetchSongs(query) {
+        try {
+            const response = await fetch(`/youtube-playlist-items?search=${encodeURIComponent(query)}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching songs:", error);
+            return [];
+        }
+    }
+
+    // 검색 시 노래 목록 업데이트 함수
+    async function searchSongs() {
+        const query = document.getElementById('searchInput').value.trim();
+        if (!query) {
+            alert("검색어를 입력하세요!");
+            return;
+        }
+        const songs = await fetchSongs(query);
+        updateSongList(songs);
+    }
+
+    // 키 입력 처리 함수 (엔터 키 입력 시 검색)
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            searchSongs();
+        }
+    }
+
+    // 노래 목록을 페이지에 업데이트하는 함수
+    function updateSongList(songs) {
+        const songList = document.getElementById('songList');
+        songList.innerHTML = ''; // 기존 목록 초기화
+
+        if (songs.length === 0) {
+            songList.innerHTML = '<li><p>검색 결과가 없습니다.</p></li>';
+            return;
+        }
+
+        songs.forEach(song => {
+            console.log(song); // 로그로 전체 song 객체를 출력하여 확인
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <h3>${song.title || "제목 없음"}</h3>
+                <p>${song.description || "설명 없음"}</p>
+                <a href="https://www.youtube.com/watch?v=${song.id}" target="_blank">YouTube에서 보기</a>
+                <button onclick="playSong('${song.id.replace(/'/g, "\\'")}')">바로 듣기</button>
+                <button onclick="handleAddSongToPlaylist('${song.id}', '${song.title}', '${song.description}', '${song.channelId}', '${song.playlistId}')">플레이리스트에 추가</button>
+            `;
+            songList.appendChild(listItem);
+        });
+    }
+
+    function playSong(videoId) {
+        fetch(`/get-audio?videoId=${videoId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch audio. Status: ${response.status}`);
+                }
+                console.log("Response headers:", response.headers);
+                return response.blob();
+            })
+            .then(audioBlob => {
+                console.log("Blob size:", audioBlob.size);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioPlayer = document.createElement('audio');
+                audioPlayer.controls = true;
+                audioPlayer.autoplay = true;
+                audioPlayer.src = audioUrl;
+
+                const audioContainer = document.createElement('div');
+                audioContainer.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                `;
+                audioContainer.appendChild(audioPlayer);
+
+                document.body.appendChild(audioContainer);
+
+                audioContainer.onclick = function () {
+                    document.body.removeChild(audioContainer);
+                    URL.revokeObjectURL(audioUrl); // Blob URL 해제
+                };
+            })
+            .catch(error => {
+                console.error("Error loading audio:", error);
+                alert("Failed to load audio. Please try again.");
+            });
+    }
+
+
+
+
+
+
+    async function addSongToPlaylist(songData) {
+        const playlists = await fetchPlaylists();
+        if (playlists.length === 0) {
+            alert("사용 가능한 플레이리스트가 없습니다.");
+            return;
+        }
+        showPlaylistModal(playlists, songData);
+    }
+
+    async function fetchPlaylists() {
+        try {
+            const response = await fetch('/playlists');
+            if (!response.ok) {
+                throw new Error('Failed to fetch playlists. Status: ' + response.status);
+            }
+            const data = await response.json();
+            console.log("Fetched playlists:", data);
+            return data;
+        } catch (error) {
+            console.error('Error fetching playlists:', error);
+            alert('플레이리스트를 불러오는데 실패했습니다.');
+            return [];
+        }
+    }
+
+    function showPlaylistModal(playlists, songData) {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1001;';
+
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = 'background-color: #fff; padding: 20px; border-radius: 10px; width: 300px; text-align: center;';
+
+        const list = document.createElement('ul');
+        list.style.cssText = 'list-style: none; padding: 0;';
+
+        if (playlists.length === 0) {
+            const noPlaylistMsg = document.createElement('li');
+            noPlaylistMsg.textContent = 'No playlists available';
+            noPlaylistMsg.style.color = '#000';
+            list.appendChild(noPlaylistMsg);
+        } else {
+            playlists.forEach(playlist => {
+                const item = document.createElement('li');
+                item.textContent = playlist.name;
+                item.style.cssText = 'cursor: pointer; margin-top: 10px; color: #000;';
+                item.onclick = async () => {
+                    try {
+                        const response = await fetch(`/playlists/${playlist.id}/songs`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(songData)
+                        });
+
+                        if (!response.ok) {
+                            if (response.headers.get('content-type')?.includes('application/json')) {
+                                const errorResponse = await response.json();
+                                console.error("Error from server:", errorResponse);
+                                alert(`서버 오류: ${errorResponse.message}`);
+                            } else {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                        } else {
+                            alert('노래가 플레이리스트에 추가되었습니다!');
+                            document.body.removeChild(modal);
+                        }
+                    } catch (error) {
+                        console.error("Error adding song to playlist:", error);
+                        alert('노래를 플레이리스트에 추가하는데 실패했습니다.');
+                    }
+                };
+                list.appendChild(item);
+            });
+        }
+
+        modalContent.appendChild(list);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        modal.onclick = function (event) {
+            if (event.target === modal) {
+                document.body.removeChild(modal);
+            }
+        };
+    }
+
+    async function handleAddSongToPlaylist(id, title, description, channelId, playlistId) {
+        const songData = {
+            id: id,
+            title: title,
+            description: description,
+            channelId: channelId,
+            playlistId: playlistId
+        };
+        console.log("Adding song to playlist:", songData); // 디버깅 로그
+        await addSongToPlaylist(songData);
+    }
+</script>
+
+
+</body>
+</html>

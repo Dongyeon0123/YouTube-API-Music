@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist Management</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #ff5252;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        ul li {
+            background-color: #1e1e1e;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff5252;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+        input[type="text"] {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
+            width: calc(100% - 22px);
+        }
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+        #modalContent {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 400px;
+            color: #fff;
+        }
+        #modalContent h2 {
+            color: #ff5252;
+            margin-bottom: 20px;
+        }
+        #modalContent ul {
+            text-align: left;
+            padding: 0;
+        }
+        #modalContent ul li {
+            background-color: #333;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #ff5252;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #ff6f61;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Playlist Management</h1>
+    </header>
+    <a href="/index" class="back-link">홈으로 돌아가기</a>
+    <main>
+        <!-- 플레이리스트 추가 -->
+        <input type="text" id="playlistTitle" placeholder="Enter playlist title" />
+        <button id="createButton" onclick="createPlaylist()">Add Playlist</button>
+        
+        <!-- 플레이리스트 표시 -->
+        <ul id="playlistContainer">
+            <!-- 플레이리스트 목록이 동적으로 추가될 부분 -->
+        </ul>
+    </main>
+
+    <script>
+        let userId = null;
+        let currentPlaylistSongs = [];
+
+        async function getUserId() {
+            try {
+                const response = await fetch('/users/user-id');
+                const data = await response.json();
+                userId = data.userId;
+                fetchPlaylists();
+            } catch (error) {
+                console.error('Failed to fetch user ID:', error);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", getUserId);
+
+        async function fetchPlaylists() {
+            if (!userId) return;
+
+            const container = document.getElementById("playlistContainer");
+            container.innerHTML = "<li>Loading...</li>";
+
+            try {
+                const response = await fetch(`/playlists?userId=${userId}`);
+                if (!response.ok) throw new Error("Failed to fetch playlists.");
+                const playlists = await response.json();
+                updatePlaylistContainer(playlists);
+            } catch (error) {
+                container.innerHTML = "<li>Failed to load playlists. Please try again later.</li>";
+                console.error("Error fetching playlists:", error);
+            }
+        }
+
+        function updatePlaylistContainer(playlists) {
+            const container = document.getElementById("playlistContainer");
+            container.innerHTML = "";
+
+            playlists.forEach(playlist => {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `
+                    🎵 ${playlist.name} 
+                    <button onclick="viewPlaylist(${playlist.id})">View</button>
+                    <button onclick="deletePlaylist(${playlist.id})">Delete</button>
+                `;
+                container.appendChild(listItem);
+            });
+        }
+
+        async function createPlaylist() {
+            const title = document.getElementById("playlistTitle").value;
+            const button = document.getElementById("createButton");
+            button.disabled = true;
+
+            if (!title.trim()) {
+                alert("Please enter a title for the playlist.");
+                button.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch("/playlists", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: title, userId })
+                });
+
+                if (!response.ok) throw new Error("Failed to create playlist.");
+                fetchPlaylists();
+                document.getElementById("playlistTitle").value = "";
+            } catch (error) {
+                alert("Failed to create playlist. Please try again later.");
+                console.error("Error creating playlist:", error);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function deletePlaylist(playlistId) {
+            try {
+                const response = await fetch(`/playlists/${playlistId}?userId=${userId}`, { method: "DELETE" });
+                if (!response.ok) throw new Error("Failed to delete playlist.");
+                fetchPlaylists();
+            } catch (error) {
+                alert("Failed to delete playlist. Please try again later.");
+                console.error("Error deleting playlist:", error);
+            }
+        }
+
+        async function viewPlaylist(playlistId) {
+            const modal = createModal();
+            modal.innerHTML = "<p>Loading songs...</p>";
+
+            try {
+                const response = await fetch(`/playlists/${playlistId}/songs`);
+                if (!response.ok) throw new Error("Failed to fetch songs.");
+
+                const songs = await response.json();
+                currentPlaylistSongs = songs;
+
+                if (!songs || songs.length === 0) {
+                    modal.innerHTML = `
+                        <p>No songs found in this playlist.</p>
+                        <button onclick="closeModal()">Close</button>
+                    `;
+                    return;
+                }
+
+                modal.innerHTML = `
+                    <h2>Playlist Songs</h2>
+                    <ul id="songList"></ul>
+                    <audio id="audioPlayer" controls style="width: 100%; margin-top: 20px;"></audio>
+                    <button onclick="closeModal()">Close</button>
+                `;
+
+                const songList = document.getElementById("songList");
+                const audioPlayer = document.getElementById("audioPlayer");
+
+                songs.forEach((song, index) => {
+                    const songItem = document.createElement("li");
+                    songItem.innerHTML = `
+                        🎵 ${song.title || "Unknown Title"} 
+                        <button onclick="playSong(${index})">Play</button>
+                        <button onclick="deleteSong(${playlistId}, '${song.id}')">Delete</button>
+                    `;
+                    songList.appendChild(songItem);
+                });
+
+                // Play selected song
+                window.playSong = (index) => {
+                    const song = currentPlaylistSongs[index];
+                    if (song) {
+                        audioPlayer.src = `/get-audio?videoId=${song.id}`;
+                        audioPlayer.play().catch((error) => {
+                            console.error("Audio playback failed:", error);
+                            alert("Audio playback failed. Please try again.");
+                        });
+                    }
+                };
+            } catch (error) {
+                modal.innerHTML = `<p>Failed to load songs. ${error.message}</p>`;
+                console.error("Error fetching songs:", error);
+            }
+        }
+
+
+
+        async function deleteSong(playlistId, songId) {
+            try {
+                const response = await fetch(`/playlists/${playlistId}/songs/${songId}`, { method: "DELETE" });
+                if (!response.ok) throw new Error("Failed to delete song.");
+                viewPlaylist(playlistId);
+            } catch (error) {
+                alert("Failed to delete song. Please try again later.");
+                console.error("Error deleting song:", error);
+            }
+        }
+
+        function createModal() {
+            closeModal();
+
+            const modal = document.createElement("div");
+            modal.id = "modal";
+
+            const content = document.createElement("div");
+            content.id = "modalContent";
+
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            return content;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("modal");
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+        
+        function playSong(videoId) {
+            fetch(`/get-audio?videoId=${videoId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch audio. Status: ${response.status}`);
+                    }
+                    return response.blob(); // Blob 형태로 데이터를 읽음
+                })
+                .then(blob => {
+                    const audioUrl = URL.createObjectURL(blob);
+
+                    const audioPlayer = document.createElement('audio');
+                    audioPlayer.controls = true;
+                    audioPlayer.autoplay = true;
+                    audioPlayer.src = audioUrl;
+
+                    const audioContainer = document.createElement('div');
+                    audioContainer.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0, 0, 0, 0.7);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 1000;
+                    `;
+                    audioContainer.appendChild(audioPlayer);
+
+                    document.body.appendChild(audioContainer);
+
+                    audioContainer.onclick = function () {
+                        document.body.removeChild(audioContainer);
+                    };
+                })
+                .catch(error => {
+                    console.error("Error loading audio:", error);
+                    alert("Failed to load audio. Please try again.");
+                });
+        }
+
+    </script>
+</body>
+</html>

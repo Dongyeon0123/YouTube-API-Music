@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Playlist</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e1e1e, #121212);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #ff5252);
+            text-align: center;
+            padding: 20px 0;
+            font-size: 28px;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        header span {
+            font-size: 36px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            background-color: #202020;
+            margin: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        nav ul li {
+            margin: 0 15px;
+            margin-bottom: 15px;
+            margin-top: 15px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 18px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #ff5252;
+            color: #fff;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #1c1c1c, #181818);
+            color: #fff;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            color: #ff5252;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            text-decoration: none;
+            color: #fff;
+            background-color: #ff5252;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #ff6f61;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            padding: 50px 20px;
+            background: #181818;
+        }
+
+        .feature-card {
+            text-align: center;
+            color: #fff;
+            width: 280px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card h3 {
+            margin: 15px 0;
+            color: #ff5252;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e1e1e, #121212);
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #1c1c1c;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover, .close:focus {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span>🎵</span> Play Note <span>🎶</span>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/register">회원가입</a></li>
+            <li><a href="/" id="auth-link">로그인</a></li>
+            <li><a href="/songList">노래 목록</a></li>
+            <li><a href="/playlistDetails">플레이리스트</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section class="hero">
+            <h1>당신만의 음악 세계</h1>
+            <p>Discover, create, and share your music playlists.<br> 새로운 노래를 찾고, 친구와 나누세요!</p>
+            <a href="/playlistDetails" class="cta-button">플레이리스트 탐색하기</a>
+        </section>
+        <section class="features">
+            <div class="feature-card">
+                <img src="/music.webp" alt="플레이리스트 생성">
+                <h3>플레이리스트 생성</h3>
+                <p>좋아하는 곡들을 손쉽게 정리하세요.</p>
+            </div>
+            <div class="feature-card">
+                <img src="find.webp" alt="음악 발견">
+                <h3>새로운 음악 발견</h3>
+                <p>당신이 좋아할 새로운 곡과 아티스트를 찾아보세요.</p>
+            </div>
+            <div class="feature-card">
+                <img src="/human.webp" alt="공유하기">
+                <h3>친구와 공유</h3>
+                <p>당신만의 큐레이션을 친구와 함께 즐겨보세요.</p>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Music Playlist Application. 모든 권리 보유.</p>
+    </footer>
+    
+    <!-- 인증 필요 모달 -->
+	<div id="errorModal" class="modal">
+	    <div class="modal-content">
+	        <span class="close" onclick="closeModal('errorModal')">&times;</span>
+	        <p class="error">로그인이 필요합니다. 로그인 페이지로 이동합니다.</p>
+	    </div>
+	</div>
+
+
+    <!-- 성공 모달 -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('successModal')">&times;</span>
+            <p class="success">회원가입이 성공적으로 완료되었습니다!</p>
+        </div>
+    </div>
+
+
+    <script th:inline="javascript">
+        // 모달 열기
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        // 모달 닫기
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+     	// 서버에서 전달된 로그인 상태를 JavaScript로 전달
+        var isLoggedIn = /*[[${isLoggedIn}]]*/ false; // isLoggedIn을 Thymeleaf에서 전달받아 true/false로 설정
+
+     	// 로그인 상태에 따라 링크와 텍스트 변경
+        var authLink = document.getElementById("auth-link");
+        if (isLoggedIn) {
+            authLink.href = "/logout";  // 로그아웃 링크
+            authLink.textContent = "로그아웃";  // 텍스트 변경
+        } else {
+            authLink.href = "/login";  // 로그인 링크
+            authLink.textContent = "로그인";  // 텍스트 변경
+        }
+     // 서버에서 인증 상태 확인
+        async function checkAuthentication() {
+            try {
+                const response = await fetch('/auth/status'); // 로그인 상태 확인용 API
+                if (!response.ok) throw new Error('Authentication check failed');
+                const data = await response.json();
+                return data.authenticated; // 서버에서 인증 여부 반환
+            } catch (error) {
+                console.error("Error checking authentication:", error);
+                return false; // 오류 발생 시 인증되지 않은 것으로 처리
+            }
+        }
+
+        // 보호된 경로 접근 처리
+        async function handleProtectedRoute(event, redirectUrl) {
+            event.preventDefault(); // 기본 링크 동작 막기
+            const isAuthenticated = await checkAuthentication();
+
+            if (isAuthenticated) {
+                window.location.href = redirectUrl; // 인증된 경우 페이지로 이동
+            } else {
+                showModal('errorModal'); // 인증되지 않은 경우 모달 띄우기
+                setTimeout(() => {
+                    window.location.href = '/login'; // 로그인 페이지로 리다이렉션
+                }, 2000); // 2초 후 이동
+            }
+        }
+
+        // 링크에 보호 처리 추가
+        document.addEventListener("DOMContentLoaded", () => {
+            const protectedLinks = [
+                { selector: 'a[href="/songList"]', redirectUrl: '/songList' },
+                { selector: 'a[href="/playlistDetails"]', redirectUrl: '/playlistDetails' },
+            ];
+
+            protectedLinks.forEach(link => {
+                const element = document.querySelector(link.selector);
+                if (element) {
+                    element.addEventListener('click', (event) => handleProtectedRoute(event, link.redirectUrl));
+                }
+            });
+        });
+
+        
+       
+    </script>
+</body>
+</html>
