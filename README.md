@@ -15,14 +15,22 @@ Spring은 Spring Boot로 진행하였다.
 youtube.api.key=내 유튜브 API 토큰
 ```
 
+### songList.html
 간단한 회원가입 & 로그인 로직과,
 songList페이지에는 Youtube에서 API 토큰을 생성한 것을 바탕으로 검색창에 원하는 것을 검색을 하면
 실제 YouTube에서 나오는 값이랑 똑같이 검색결과가 나온다.
+<div style="text-align: center;">
+    <img src="images/search.png" width="40%">
+</div>
 음악듣기 버튼은 도저히 고쳐지지가 않아 일단 보류한 상태다.
 Youtube에서 보기 버튼을 클릭하면, 해당 유튜브 동영상 링크로 가지도록 코딩했다.
 플레이리스트에 추가 버튼을 클릭하면, 현재 내가 생성한 플레이리스트 목록들이 나오고,
 넣고 싶은 플레이리스트를 클릭하게 되면 내가 원하는 노래가 원하는 플레이리스트로 들어가지도록 하였다.
 
+### playlistDetails.html
+<div style="text-align: center;">
+    <img src="images/playlist.png" width="70%">
+</div>
 playlistDetail페이지에서는
 내가 만들고싶은 플레이리스트의 제목을 입력하고,
 Add Playlist를 클릭하면 플레이리스트가 생성 된다.
@@ -30,6 +38,9 @@ View를 클릭하면 내가 플레이리스트에 담은 노래들이 모달창�
 Delete를 클릭하면 플레이리스트가 삭제되게 된다.
 그리고 내가 원하는 노래를 클릭해 들을 수 있고,
 그리고 삭제 버튼을 눌러 플레이리스트에서 노래를 삭제할 수 있다.
+<div style="text-align: center;">
+    <img src="images/song.png" width="30%">
+</div>
 
 ## 개발 기간
 2024년 12월 4일 ~ 2024년 12월 11일
