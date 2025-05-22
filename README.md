@@ -4,7 +4,7 @@
 이 프로젝트는 대학교 강의 중, Spring을 사용하는 "고급 웹프로그래밍"이라는 강의에서 진행한 프로젝트로,
 1인으로 간단한 CRUD기능을 수행하는 Spring프로젝트를 사용하였다.
 
-사용 언어는 HTML, CSS, JavaScript, Spring, MySQL로,
+사용 언어는 HTML, CSS, JavaScript, ,Java, Spring, MySQL로,
 Spring은 Spring Boot로 진행하였다.
 
 구글 클라우드에서 유튜브 API프로젝트와 토큰을 생성하고,
